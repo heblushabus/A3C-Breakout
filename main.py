@@ -17,7 +17,7 @@ class Params():
         self.gamma = 0.99
         self.tau = 1.
         self.seed = 1
-        self.num_processes = 16
+        self.num_processes = 4
         self.num_steps = 20
         self.max_episode_length = 10000
         self.env_name = 'Breakout-v0' # Sadece oynun adını değiştirerek diğer oyunlar üzerinde çalışabiliriz.
@@ -27,6 +27,7 @@ os.environ['OMP_NUM_THREADS'] = '1' # Her core için 1 thread
 params = Params() # Varsayılan parametreler ile Params nesnesi oluşuturulur.
 torch.manual_seed(params.seed) # Seed ayarı
 env = create_atari_env(params.env_name) # Optimize edilmiş oyun ortamı
+print(env.observation_space.shape)
 shared_model = ActorCritic(env.observation_space.shape[0], env.action_space) # Diğer ajanlar tarafından paylaşılan shared_model (Farklı corelardaki farklı threadlerde)
 shared_model.share_memory() # Modeller farklı corelarda olsa bile paylaşımlı modeli kullanabilmesi için modeli paylaşımlı bellekte tutuyoruz.
 
