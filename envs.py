@@ -8,10 +8,10 @@ from gym.spaces.box import Box
 
 # Taken from https://github.com/openai/universe-starter-agent
 
-def create_atari_env(env_id, video=False):
+def create_atari_env(env_id, video=True):
     env = gym.make(env_id)
     if video:
-        env = wrappers.Monitor(env, 'test', force=True)
+        env = wrappers.Monitor(env, 'test', force=True, video_callable = lambda count: count % 10 == 0)
     env = MyAtariRescale42x42(env)
     env = MyNormalizedEnv(env)
     return env
