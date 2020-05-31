@@ -11,7 +11,7 @@ import torch.nn.functional as F
 # bu iki ayrı gruba farklı varyans değerlerinde atama yapabileceğiz.
 def normalized_columns_initializer(weights, std=1.0):
     out = torch.randn(weights.size()) # Önce rastgele normal dağılımlı değerler atıyoruz.
-    out *= std / torch.sqrt(out.pow(2).sum(1).expand_as(out)) # Bu işlem sonucunda, çıkışın varyansı standart sapmanın karesine eşit olacaktır. (var(out) = std^2)
+    out *= std / torch.sqrt(out.pow(2).sum(1, True).expand(out.size())) # Bu işlem sonucunda, çıkışın varyansı standart sapmanın karesine eşit olacaktır. (var(out) = std^2)
     return out
 
 
@@ -63,7 +63,7 @@ class ActorCritic(torch.nn.Module):
         self.critic_linear = nn.Linear(256, 1) # Critic için full connection: output = V(S)
         self.actor_linear = nn.Linear(256, num_outputs) # Actor için full connection: output = Q(S,A)
         self.apply(weights_init) # modelin ağırlıkları rastgele değerler ile tanımlanır
-       
+        
         # exploration vs exploitation
         self.actor_linear.weight.data = normalized_columns_initializer(self.actor_linear.weight.data, 0.01) # Actor tensörü için ağırlıkların standart sapmasını 0.01 olarak ayarlıyoruz
         self.actor_linear.bias.data.fill_(0) # Actor'ün biasını sıfırlıyoruz (weights_init fonksiyonunda bunu zaten yapmıştık ama emin olmak için tekrar yapıyoruz)
