@@ -1,4 +1,4 @@
-# Breakout-A3C
+# A3C - Breakout
 
 Bu projede, [Asynchronous Advanced Actor Critic](https://arxiv.org/abs/1602.01783) algoritması kullanılarak [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) oynunu oynayan bir yapay zeka ajanı tasarlanmıştır.
 
