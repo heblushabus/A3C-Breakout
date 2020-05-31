@@ -64,7 +64,7 @@ def train(rank, params, shared_model, optimizer):
             entropy = -(log_prob * prob).sum(1) # H(p) = - sum_x p(x).log(p(x))
             entropies.append(entropy) # Hesaplanan entropiyi listede saklıyoruz.
 
-            action = prob.multinomial().data # selecting an action by taking a random draw from the prob distribution
+            action = prob.multinomial(1).data # prob dağıtımından rastgele bir çizim yaparak bir eylem seçme
             log_prob = log_prob.gather(1, Variable(action)) # Seçilen aksiyonun logaritmik olasılığını alıyoruz.
             values.append(value) # Hesaplanan değer V(S) listeye ekleniyor.
             log_probs.append(log_prob) # Hesaplanan logaritmik olasılık listeye ekleniyor.
@@ -116,7 +116,7 @@ def train(rank, params, shared_model, optimizer):
                
             # Stochastic Gradient Descent
             optimizer.zero_grad() # optimizer tanımlanması
-            (policy_loss + 0.5 * value_loss).backward() # Policy Loss daha küçük bir değer olduğu için, Policy Loss'a Value Loss'tan 2 kat daha fazla önem veriyoruz.
+            (policy_loss + 0.5 * value_loss).backward(retain_graph=True) # Policy Loss daha küçük bir değer olduğu için, Policy Loss'a Value Loss'tan 2 kat daha fazla önem veriyoruz.
 
             torch.nn.utils.clip_grad_norm(model.parameters(), 40) # Bu sayede gradyanların çok yüksek değerler alması önlenecektir. (Gradyanların normunun 0 ile 40 arasında olmasını sağlıyor.)
             ensure_shared_grads(model, shared_model) # Ajan ile paylaşımlı modelin aynı gradyanları kullandığından emin olmak için kullanıyoruz.
