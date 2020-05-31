@@ -1,0 +1,5 @@
+pyglet==1.2.4
+opencv==4.2.0
+pytorch==1.4.0
+ffmeg==4.3.2
+gym==0.9.3
