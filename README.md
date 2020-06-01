@@ -30,4 +30,7 @@ conda install -c conda-forge opencv
 ``` bash
 python main.py
 ```
-Yukarıdaki komut ile eğitim başlar. Varsayılan olarak her 10 iterasyonda bir dört ajanın oynadığı oynu mp4 video formatında `test` klasörüne kaydeder.
+Yukarıdaki komut ile eğitim başlar. Varsayılan olarak her 10 iterasyonda bir, 16 ajanın oynadığı oynu mp4 video formatında `test` klasörüne kaydeder.
+
+## Sonuçlar
+14 saatlik eğitimin sonucunda eğitilen ajan 70-90 arası değişen skorlar elde etmektedir. Örnek sonuçları `sample_videos` klasörü altında görebilirsiniz.
