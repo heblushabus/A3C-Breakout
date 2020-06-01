@@ -17,7 +17,7 @@ class Params():
         self.gamma = 0.99
         self.tau = 1.
         self.seed = 1
-        self.num_processes = 4
+        self.num_processes = 16
         self.num_steps = 20
         self.max_episode_length = 10000
         self.env_name = 'Breakout-v0' # Sadece oynun adını değiştirerek diğer oyunlar üzerinde çalışabiliriz.
