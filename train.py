@@ -85,39 +85,39 @@ def train(rank, params, shared_model, optimizer):
             if done:
                 break # Gözlem durdurulur ve we doğrudan bir sonraki adıma geçilir. (Update shared_model)
 
-            R = torch.zeros(1, 1) # Kümülatif ödül değeri tanımlanır.
+        R = torch.zeros(1, 1) # Kümülatif ödül değeri tanımlanır.
 
-            if not done: # Eğer bölüm tamamlanmadıysa:
-                value, _, _ = model((Variable(state.unsqueeze(0)), (hx, cx)))
-                
-                R = value.data # Son paylaşılan durumdaki değeri kümülatif ödül olarak tanımlarız.
+        if not done: # Eğer bölüm tamamlanmadıysa:
+            value, _, _ = model((Variable(state.unsqueeze(0)), (hx, cx)))
+            
+            R = value.data # Son paylaşılan durumdaki değeri kümülatif ödül olarak tanımlarız.
 
-            values.append(Variable(R)) # Son erişilen durumun değeri V(S) listeye eklenir.
-            policy_loss = 0 # Actor
-            value_loss = 0 # Critic
-            R = Variable(R) # torch.Variable olduğuna emin olmak için
-            gae = torch.zeros(1, 1) # Generalized Advantage Estimation tanımlanması: A(a,s) = Q(s,a) - V(s)
+        values.append(Variable(R)) # Son erişilen durumun değeri V(S) listeye eklenir.
+        policy_loss = 0 # Actor
+        value_loss = 0 # Critic
+        R = Variable(R) # torch.Variable olduğuna emin olmak için
+        gae = torch.zeros(1, 1) # Generalized Advantage Estimation tanımlanması: A(a,s) = Q(s,a) - V(s)
 
-            for i in reversed(range(len(rewards))): # Son gözlem adımından başlanarak zamanda terse doğru gidilir.
-                R = params.gamma * R + rewards[i] # Kümülatif ödül hesabı
-                # R = gamma*R + r_t = 
-                # R = r_0 + gamma r_1 + gamma^2 * r_2 ... + gamma^(n-1)*r_(n-1) + gamma^nb_step * V(last_state)
-                advantage = R - values[i] # R, zamanın Q'nun t = i anındaki bir tahmincisidir. Yani, advantage_i = Q_i - V(state_i) = R - value[i]
-                value_loss = value_loss + 0.5 * advantage.pow(2) # Value loss hesaplanması
+        for i in reversed(range(len(rewards))): # Son gözlem adımından başlanarak zamanda terse doğru gidilir.
+            R = params.gamma * R + rewards[i] # Kümülatif ödül hesabı
+            # R = gamma*R + r_t = 
+            # R = r_0 + gamma r_1 + gamma^2 * r_2 ... + gamma^(n-1)*r_(n-1) + gamma^nb_step * V(last_state)
+            advantage = R - values[i] # R, zamanın Q'nun t = i anındaki bir tahmincisidir. Yani, advantage_i = Q_i - V(state_i) = R - value[i]
+            value_loss = value_loss + 0.5 * advantage.pow(2) # Value loss hesaplanması
 
-                TD = rewards[i] + params.gamma * values[i + 1].data - values[i].data # Temporal Difference hesabı
-                gae = gae * params.gamma * params.tau + TD 
-                # gae = sum_i (gamma*tau)^i * TD(i) 
-                # gae_i = gae_(i+1)*gamma*tau + (r_i + gamma*V(state_i+1) - V(state_i))
+            TD = rewards[i] + params.gamma * values[i + 1].data - values[i].data # Temporal Difference hesabı
+            gae = gae * params.gamma * params.tau + TD 
+            # gae = sum_i (gamma*tau)^i * TD(i) 
+            # gae_i = gae_(i+1)*gamma*tau + (r_i + gamma*V(state_i+1) - V(state_i))
 
-                policy_loss = policy_loss - log_probs[i] * Variable(gae) - 0.01 * entropies[i] # Policy Loss hesabı
-                # policy_loss = - sum_i log(pi_i)*gae + 0.01*H_i
-                # pi: Aksiyonların olasılıksal dağılımlarının softmax aktivasyonu sonucu 
-               
-            # Stochastic Gradient Descent
-            optimizer.zero_grad() # optimizer tanımlanması
-            (policy_loss + 0.5 * value_loss).backward(retain_graph=True) # Policy Loss daha küçük bir değer olduğu için, Policy Loss'a Value Loss'tan 2 kat daha fazla önem veriyoruz.
+            policy_loss = policy_loss - log_probs[i] * Variable(gae) - 0.01 * entropies[i] # Policy Loss hesabı
+            # policy_loss = - sum_i log(pi_i)*gae + 0.01*H_i
+            # pi: Aksiyonların olasılıksal dağılımlarının softmax aktivasyonu sonucu 
+            
+        # Stochastic Gradient Descent
+        optimizer.zero_grad() # optimizer tanımlanması
+        (policy_loss + 0.5 * value_loss).backward(retain_graph=True) # Policy Loss daha küçük bir değer olduğu için, Policy Loss'a Value Loss'tan 2 kat daha fazla önem veriyoruz.
 
-            torch.nn.utils.clip_grad_norm(model.parameters(), 40) # Bu sayede gradyanların çok yüksek değerler alması önlenecektir. (Gradyanların normunun 0 ile 40 arasında olmasını sağlıyor.)
-            ensure_shared_grads(model, shared_model) # Ajan ile paylaşımlı modelin aynı gradyanları kullandığından emin olmak için kullanıyoruz.
-            optimizer.step() # Optimizasyon adımı çalıştırılır.
+        torch.nn.utils.clip_grad_norm(model.parameters(), 40) # Bu sayede gradyanların çok yüksek değerler alması önlenecektir. (Gradyanların normunun 0 ile 40 arasında olmasını sağlıyor.)
+        ensure_shared_grads(model, shared_model) # Ajan ile paylaşımlı modelin aynı gradyanları kullandığından emin olmak için kullanıyoruz.
+        optimizer.step() # Optimizasyon adımı çalıştırılır.
